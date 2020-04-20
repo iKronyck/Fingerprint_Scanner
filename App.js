@@ -6,24 +6,22 @@
  * @flow strict-local
  */
 
-import React, {useEffect, useState} from 'react';
-import {Platform} from 'react-native';
+import React from 'react';
 import 'react-native-gesture-handler';
-import {NavigationContainer} from '@react-navigation/native';
-import Keychain from 'react-native-keychain';
-import StackAuth from './src/routes/auth';
-import StackHome from './src/routes/home';
 import {PersistGate} from 'redux-persist/integration/react';
-import {Provider, connect} from 'react-redux';
+import {Root} from 'native-base';
+import {Provider} from 'react-redux';
+
 import {store, persistor} from './store';
-import Root from './src/screens/Root';
+import RootApp from './src/screens/Root';
 
-const App: () => React$Node = ({authorize}) => {
-
+const App: () => React$Node = () => {
   return (
     <Provider store={store}>
       <PersistGate loading={null} persistor={persistor}>
-        <Root />
+        <Root>
+          <RootApp />
+        </Root>
       </PersistGate>
     </Provider>
   );

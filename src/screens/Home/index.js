@@ -13,7 +13,7 @@ import Person from '../../assets/img/person.png';
 import {connect} from 'react-redux';
 import {logout, destroySession} from '../../actions';
 
-const Home = ({username, logout, destroySession, useFinger}) => {
+const Home = ({username, logoutInApp, destroySessionInApp, useFinger}) => {
   let clearTime = null;
 
   useEffect(() => {
@@ -29,9 +29,9 @@ const Home = ({username, logout, destroySession, useFinger}) => {
   function closeSession() {
     clearTimeout(clearTime);
     if (useFinger) {
-      logout();
+      logoutInApp();
     } else {
-      destroySession();
+      destroySessionInApp();
     }
   }
 
@@ -83,5 +83,5 @@ const mapStateToProps = state => ({
 
 export default connect(
   mapStateToProps,
-  {logout, destroySession},
+  {logoutInApp: logout, destroySessionInApp: destroySession},
 )(Home);

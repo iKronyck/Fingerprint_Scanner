@@ -9,70 +9,52 @@ import {
   StatusBar,
   KeyboardAvoidingView,
   Platform,
+  AppState,
 } from 'react-native';
 import {CheckBox} from 'native-base';
-import Keychain from 'react-native-keychain';
+import _ from 'lodash';
+import {connect} from 'react-redux';
+import {loginUser} from '../../actions';
+import {showToast} from '../../utils/Toast';
+import {
+  getSupportBiometrics,
+  saveInKeychain,
+  readKeychain,
+} from '../../utils/Biometrics';
 import Faceid from '../../assets/img/face-id.png';
 import Touchid from '../../assets/img/touch-id.png';
 import ShowEye from '../../assets/img/show-eye.png';
 import HideEye from '../../assets/img/hide-eye.png';
 import styles from './Login.style';
-import _ from 'lodash';
-import {connect} from 'react-redux';
-import {loginUser} from '../../actions';
+import {users} from '../../utils/User';
 
-const Login = ({loginUser, user, useFinger}) => {
+const Login = ({loginUserInApp, user, useFinger, username}) => {
   useEffect(() => {
     verifyBiometrics();
+    AppState.addEventListener('change', handleChange);
+    return () => {
+      AppState.removeEventListener('change', handleChange);
+    };
   }, []);
+
+  const handleChange = newState => {
+    if (newState === 'active') {
+      verifyBiometrics();
+    }
+  };
+
   const [showPassword, setShowPassword] = useState(false);
   const [showBiometricsCheck, setBiometricsCheck] = useState(false);
   const [useFingerprint, setUseFingerprint] = useState(false);
-  const [userName, setUsername] = useState('');
+  const [userName, setUsername] = useState(user);
   const [password, setPassword] = useState('');
-  const users = [
-    {
-      id: 1,
-      name: 'Israel Alfaro',
-      username: 'ihernandez',
-      password: 'Applaudo',
-    },
-    {
-      id: 1,
-      name: 'Irvin Sanchez',
-      username: 'isanchez',
-      password: 'Applaudo',
-    },
-    {
-      id: 1,
-      name: 'Juan Menjivar',
-      username: 'jmenjivar',
-      password: 'Applaudo',
-    },
-    {
-      id: 1,
-      name: 'Lourdes Cañas',
-      username: 'lcanas',
-      password: 'Applaudo',
-    },
-  ];
-  const options =
-    Platform.OS === 'ios'
-      ? {
-          accesible: Keychain.ACCESSIBLE.AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY,
-          accessControl:
-            Keychain.ACCESS_CONTROL.BIOMETRY_ANY_OR_DEVICE_PASSCODE,
-        }
-      : {
-          accesible: Keychain.ACCESSIBLE.AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY,
-          accessControl: Keychain.ACCESS_CONTROL.BIOMETRY_ANY,
-          rules: Keychain.SECURITY_RULES.NONE,
-        };
 
   async function verifyBiometrics() {
-    const verify = await Keychain.getSupportedBiometryType();
+    const verify = await getSupportBiometrics();
     if (verify) {
       setBiometricsCheck(true);
+    } else {
+      setBiometricsCheck(false);
     }
   }
 
@@ -84,12 +66,12 @@ const Login = ({loginUser, user, useFinger}) => {
     if (userName && password) {
       login();
     } else if (!userName && !password) {
-      alert('User and password is required');
+      showToast('User and password is required');
     } else {
       if (!userName) {
-        alert('The user is require');
+        showToast('The user is require');
       } else {
-        alert('The password is require');
+        showToast('The password is require');
       }
     }
   }
@@ -98,27 +80,26 @@ const Login = ({loginUser, user, useFinger}) => {
     const searchUser = _.filter(users, {username: userName, password});
     if (searchUser && searchUser.length > 0) {
       if (useFingerprint) {
-        await Keychain.setGenericPassword(userName, password, options);
+        await saveInKeychain(userName, password);
       }
       const {id, name, username} = searchUser[0];
-      const user = {
+      const userData = {
         id,
         name,
         username,
       };
-      loginUser({
-        user,
+      loginUserInApp({
+        user: userData,
         authorize: true,
         useFinger: useFingerprint,
       });
     } else {
-      alert('Incorrect username or password');
+      showToast('Incorrect username or password');
     }
   }
 
   async function loginWithFinger() {
-    const credentials = await Keychain.getGenericPassword(options);
-    console.log(credentials);
+    const credentials = await readKeychain();
     if (credentials) {
       const searchUser = _.filter(users, {
         username: credentials.username,
@@ -126,13 +107,13 @@ const Login = ({loginUser, user, useFinger}) => {
       });
       if (searchUser && searchUser.length > 0) {
         const {id, name, username} = searchUser[0];
-        const user = {
+        const userData = {
           id,
           name,
           username,
         };
-        loginUser({
-          user,
+        loginUserInApp({
+          user: userData,
           authorize: true,
           useFinger: true,
         });
@@ -184,7 +165,7 @@ const Login = ({loginUser, user, useFinger}) => {
                   </View>
                 </TouchableOpacity>
               </View>
-              {!user.hasOwnProperty('username') && showBiometricsCheck && (
+              {!user && showBiometricsCheck && (
                 <View style={styles.checkButton}>
                   <TouchableOpacity
                     onPress={v => setUseFingerprint(!useFingerprint)}
@@ -220,11 +201,11 @@ const Login = ({loginUser, user, useFinger}) => {
 
 const mapStateToProps = state => ({
   authorize: state.auth.authorize,
-  user: state.auth.user,
+  user: state.auth.user.username,
   useFinger: state.auth.useFinger,
 });
 
 export default connect(
   mapStateToProps,
-  {loginUser},
+  {loginUserInApp: loginUser},
 )(Login);

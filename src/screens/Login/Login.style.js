@@ -18,7 +18,7 @@ export default StyleSheet.create({
     width: '80%',
     justifyContent: 'space-around',
   },
-  img: {width: 100, height: 100, tintColor: 'white'},
+  img: {width: 90, height: 90, tintColor: 'white'},
   images: {
     flexDirection: 'row',
     paddingBottom: 10,
