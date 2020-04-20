@@ -1,6 +1,6 @@
-# Fingerprint Scanner :point_up: :camera: :woman: :man:
+# Fingerprint Scanner :point_up: :camera: :woman: :man: :closed_lock_with_key:
 
-_Fingerprint_Scanner is a example how to authenticating users with biometric authentication methods like Face ID and Touch ID on both iOS and Android with react-native_
+_Fingerprint_Scaner is an example on how to use biometric authentification with methods like face id, touch id and saving session data on Keychain or shared preferences for both ios and android_
 
 # Dev environment 🛠️
 
