@@ -1,6 +1,6 @@
 # Fingerprint Scanner :point_up: :camera: :woman: :man: :closed_lock_with_key:
 
-_Fingerprint_Scaner is an example on how to use biometric authentification with methods like face id, touch id and saving session data on Keycahin or shared preferences for both ios and android_
+_Fingerprint_Scaner is an example on how to use biometric authentification with methods like face id, touch id and saving session data on Keychain or shared preferences for both ios and android_
 
 # Dev environment 🛠️
 
