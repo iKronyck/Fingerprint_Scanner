@@ -18,4 +18,14 @@ export default StyleSheet.create({
   },
   firstText: {color: 'white', fontSize: 24, paddingTop: 30},
   secondText: {color: 'white', fontSize: 24, fontWeight: 'bold'},
+  buttonLogout: {
+    backgroundColor: colors.primaryColorLight,
+    marginTop: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: 50,
+    width: 100,
+    borderRadius: 5,
+  },
+  textButton: {color: 'white', fontSize: 18},
 });

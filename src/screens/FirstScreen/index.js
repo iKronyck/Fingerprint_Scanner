@@ -6,37 +6,77 @@ import {
   ActivityIndicator,
   StatusBar,
   Alert,
+  Platform,
 } from 'react-native';
 import styles from './FirstScreen.style';
 import Faceid from '../../assets/img/face-id.png';
 import Touchid from '../../assets/img/touch-id.png';
+import {connect} from 'react-redux';
+import {redirectToHome} from '../../actions';
+import Keychain from 'react-native-keychain';
 
-const FirstScreen = () => {
+const FirstScreen = ({dispatch, redirect, navigation, username, password}) => {
   const [loading, setLoading] = useState(true);
-  const [typeBiometric, setTypeBiometric] = useState('Touch');
+  const [typeBiometric, setTypeBiometric] = useState('Fingerprint');
 
   useEffect(() => {
-    // verifyBiometrics();
+    if (redirect) {
+      navigation.navigate('Home');
+    } else {
+      verifyBiometrics();
+      setLoading(false);
+    }
   }, []);
 
   async function verifyBiometrics() {
-    Alert.alert(
-      'Enter with fingerprint',
-      'We have detected that you have a fingerprint, would you like to use it to log in?',
-      [
-        {
-          text: 'No',
-          onPress: () => console.log('Cancel Pressed'),
-          style: 'danger',
-        },
-        {text: 'Yes', onPress: () => getBiometrics()},
-      ],
-      {cancelable: false},
-    );
+    const haveBiometric = await Keychain.getSupportedBiometryType();
+    console.log(haveBiometric);
+    if (haveBiometric) {
+      if (haveBiometric === 'Fingerprint') {
+        setTypeBiometric('Fingerprint');
+      } else if (haveBiometric === 'FaceID') {
+        setTypeBiometric('FaceID');
+      }
+      Alert.alert(
+        'Enter with fingerprint',
+        'We have detected that you have a fingerprint, would you like to use it to log in?',
+        [
+          {
+            text: 'No',
+            onPress: () => console.log('Cancel Pressed'),
+            style: 'danger',
+          },
+          {text: 'Yes', onPress: () => getBiometrics()},
+        ],
+        {cancelable: false},
+      );
+    } else {
+      // move a home
+      redirectToHome({
+        redirectToHome: true,
+      });
+      navigation.navigate('Home');
+    }
   }
 
   async function getBiometrics() {
-    // test
+    const options =
+      Platform.OS === 'ios'
+        ? {
+            accesible: Keychain.ACCESSIBLE.AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY,
+            accessControl:
+              Keychain.ACCESS_CONTROL.BIOMETRY_ANY_OR_DEVICE_PASSCODE,
+          }
+        : {
+            accesible: Keychain.ACCESSIBLE.AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY,
+            accessControl: Keychain.ACCESS_CONTROL.BIOMETRY_ANY,
+            rules: Keychain.SECURITY_RULES.NONE,
+          };
+    await Keychain.setGenericPassword(username, password, options);
+    redirectToHome({
+      redirectToHome: true,
+    });
+    navigation.navigate('Home');
   }
 
   return (
@@ -71,4 +111,13 @@ const FirstScreen = () => {
   );
 };
 
-export default FirstScreen;
+const mapStateToProps = state => ({
+  redirect: state.auth.redirectToHome,
+  username: state.auth.user.name,
+  password: state.auth.user.password,
+});
+
+export default connect(
+  mapStateToProps,
+  {redirectToHome},
+)(FirstScreen);
