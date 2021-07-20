@@ -18,7 +18,7 @@
     "native-base": "^2.13.12",
     "prop-types": "^15.7.2",
     "react": "16.11.0",
-    "react-native": "0.62.0",
+    "react-native": "0.62.3",
     "react-native-fingerprint-scanner": "^4.0.0",
     "react-native-gesture-handler": "^1.6.1",
     "react-native-keychain": "^6.0.0",
